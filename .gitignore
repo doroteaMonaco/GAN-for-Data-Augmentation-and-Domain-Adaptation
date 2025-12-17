@@ -1,1 +1,6 @@
-images/
+data/raw/images/**
+venv/
+data/processed/baseline/test/**
+data/processed/baseline/train/benign/**
+data/processed/baseline/train/malignant/**
+data/processed/baseline/val/**

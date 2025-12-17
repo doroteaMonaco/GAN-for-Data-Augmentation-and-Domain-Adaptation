@@ -65,7 +65,7 @@ Train and evaluate a classifier (e.g., CNN or transformer-based model) on the re
 ### Phase 3: Augmented Training & Comparison
 
 1. Retrain the same classifier on the augmented dataset (real + synthetic data)
-2. Compare performance with Phase 1 to assess the contribution of GAN-based augmentation
+2. Compare performance with Phase 1 to assess the contribution of GAN-based augmentation --> Synthetic images NEVER go into test.
 3. **(Optional)** Introduce adversarial domain adaptation to improve generalization across domains (i.e., to reduce the effect of domain shift during training & testing)
 
 ---
@@ -135,6 +135,13 @@ Use standard augmentations (flip, rotation, crop) to improve GAN training.
 
 **Qualitative:**
 - Visualize synthetic images for realism & diversity
+
+**Structure**
+- Start with 1k vs 10k samples 
+- Train on both classes 
+- Train with balanced batches 50/50
+- User cWGAN-GP (conditioned GAN with Wasserstein loss and Gradient Penalty)
+- Generate other 2k/3k of images from underepresented class (don't match 10k - 10k)
 
 ---
 
