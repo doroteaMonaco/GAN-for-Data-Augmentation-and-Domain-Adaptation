@@ -1,6 +1,6 @@
-data/raw/images/**
+data/raw/images/**.jpg
 venv/
-data/processed/baseline/test/**
-data/processed/baseline/train/benign/**
-data/processed/baseline/train/malignant/**
-data/processed/baseline/val/**
+data/processed/baseline/test/**.jpg
+data/processed/baseline/train/benign/**.jpg
+data/processed/baseline/train/malignant/**.jpg
+data/processed/baseline/val/**.jpg
