@@ -11,9 +11,8 @@ sys.path.insert(0, str(project_root))
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import torch
-from config.config import RAW_METADATA_PATH
-from config.config import RAW_DATA_PATH
-from config.config import BASELINE_PATH
+from config.config import config
+
 
 
 config_path = 'config/preprocessing.yaml'
@@ -23,7 +22,7 @@ with open(config_path, 'r') as f:
 
 
 def load_and_preprocess_data(malignant_count, benign_count):
-    df = pd.read_csv(RAW_METADATA_PATH)
+    df = pd.read_csv(config.RAW_METADATA_PATH)
     
     #mantain only interesting columns
     df = df[['isic_id', 'diagnosis_1']].rename(columns={'isic_id': 'img_name', 'diagnosis_1': 'target'})
@@ -52,10 +51,11 @@ def copy_images(images, src_folder, dst_folder):
     for img in images:
         img_path = img + '.jpg'
         shutil.copy(os.path.join(src_folder, img_path), dst_folder)
-        return len(images)
+    
+    return len(images)
 
 
-def populate_baseline(seed, df, _, val_ratio, test_ratio):
+def populate_baseline(seed, df, val_ratio, test_ratio):
 
     #get test - (train + val) split
     X, x_test, Y, y_test = train_test_split(df['img_name'], df['target'], test_size=test_ratio, random_state=seed, stratify=df['target']) #mantain same imbalance
@@ -77,27 +77,29 @@ def populate_baseline(seed, df, _, val_ratio, test_ratio):
     val_images = list(df_val['img_name'])
 
     #obtain dir paths and copy images
-    train_benign_path = os.path.join(BASELINE_PATH, 'train', 'benign')
-    len_benign_train = copy_images(train_benign_images, RAW_DATA_PATH, train_benign_path)
+    train_benign_path = os.path.join(config.BASELINE_PATH, 'train', 'benign')
+    len_benign_train = copy_images(train_benign_images, config.RAW_DATA_PATH, train_benign_path)
 
     print(f'COPIED {len_benign_train} BENIGN IMAGES IN train/benign FOLDER')
 
-    train_malignant_path = os.path.join(BASELINE_PATH, 'train', 'malignant')
-    len_malignant_train = copy_images(train_malignant_images, RAW_DATA_PATH, train_malignant_path)
+    train_malignant_path = os.path.join(config.BASELINE_PATH, 'train', 'malignant')
+    len_malignant_train = copy_images(train_malignant_images, config.RAW_DATA_PATH, train_malignant_path)
     
     print(f'COPIED {len_malignant_train} MALIGNANT IMAGES IN train/malignant FOLDER')
 
-    test_path = os.path.join(BASELINE_PATH, 'test')
-    len_test = copy_images(test_images, RAW_DATA_PATH, test_path)
+    test_path = os.path.join(config.BASELINE_PATH, 'test')
+    len_test = copy_images(test_images, config.RAW_DATA_PATH, test_path)
 
     print(f'COPIED {len_test} TEST IMAGES IN test FOLDER')
 
     
 
-    val_path = os.path.join(BASELINE_PATH, 'val')
-    len_val = copy_images(val_images, RAW_DATA_PATH, val_path)
+    val_path = os.path.join(config.BASELINE_PATH, 'val')
+    len_val = copy_images(val_images, config.RAW_DATA_PATH, val_path)
 
     print(f'COPIED {len_val} VAL IMAGES IN val FOLDER')
+
+    return df_test, df_train, df_val
 
     
 
@@ -107,5 +109,11 @@ def populate_baseline(seed, df, _, val_ratio, test_ratio):
 df = load_and_preprocess_data(cfg['dataset']['malignant_count'], cfg['dataset']['benign_count'])
 
 #populate baseline/train, baseline/test and baseline/val
-populate_baseline(cfg['dataset']['random_seed'], df, cfg['dataset']['train_ratio'], cfg['dataset']['val_ratio'], cfg['dataset']['test_ratio'])
+df_test, df_train, df_val = populate_baseline(cfg['dataset']['random_seed'], df, cfg['dataset']['val_ratio'], cfg['dataset']['test_ratio'])
+
+#save metadata for classifier training
+df_test.to_csv(config.BASELINE_PATH / 'test' / 'test.csv', index=False)
+df_train.to_csv(config.BASELINE_PATH / 'train' / 'train.csv', index=False)
+df_val.to_csv(config.BASELINE_PATH / 'val' / 'val.csv', index=False)
+
 
