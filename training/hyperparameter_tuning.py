@@ -15,7 +15,7 @@ PARAM_DISTRIBUTION = {
     'optimizer': ['SGD', 'Adam', 'RMSprop', 'AdamW'] ,
 }
 
-N_ITERATIONS = 5 #simulate 5 iterations of RandomSearch
+N_ITERATIONS = 10 #simulate 10 iterations of RandomSearch
 
 BEST_CONFIG_EPOCHS = 10
 
@@ -41,6 +41,14 @@ def tune_with_hyperparams(hyperparams):
         res['roc_auc']= metrics['roc_auc']
         res['val_loss']= metrics['val_loss']
 
+        # Clean CUDA cache after each run
+        try:
+            import torch
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except ImportError:
+            pass
+
         return res, config
         
     except Exception as e:
@@ -50,7 +58,7 @@ def tune_with_hyperparams(hyperparams):
 def run_hyperparameter_tuning():
     print("RUNNING HYPERPARAMETER TUNING\n")
     
-    print(f"Total iterazion of RandomSearch: {N_ITERATIONS}\n")
+    print(f"Total iterations of RandomSearch: {N_ITERATIONS}\n")
     
     results = []
     
@@ -67,7 +75,16 @@ def run_hyperparameter_tuning():
         print(f"PROCESSING ITERATION {iter+1}")
     
         result, config = tune_with_hyperparams(params)
+
+        # Clean CUDA cache after run
+        try:
+            import torch
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except ImportError:
+            pass
         
+
         if result is not None:
             results.append(result)
     
@@ -92,43 +109,39 @@ def run_hyperparameter_tuning():
     
  
     
-    return best_config, results_df, config
+    return best_config, results_df
 
 def run_best_config():
+
     best_config, results = run_hyperparameter_tuning()
     print(f'BEST CONFIG: {best_config}\nRESULTS: {results}')
 
-    #run complete training with best config
+    # run complete training with best config
     params = {
-            'learning_rate': best_config['learning_rate'],
-            'batch_size': best_config['batch_size'],
-            'weight_decay': best_config['weight_decay'],
-            'momentum': best_config['momentum'],
-            'optimizer': best_config['optimizer'],
-        }
-    
+        'lr': best_config['lr'],
+        'batch_size': best_config['batch_size'],
+        'weight_decay': best_config['weight_decay'],
+        'momentum': best_config['momentum'],
+        'optimizer': best_config['optimizer'],
+    }
+
     print("FINETUNING WITH HYPERPARAMETER TUNING TRAINING - BEST CONFIGURATION TRAINING")
-    
+
     try:
-    
         with open('experiments/baseline_ft_ht.yaml', 'r') as f:
             config = yaml.safe_load(f)
-        
-        config['training']['params']['epochs'] = BEST_CONFIG_EPOCHS 
-        config['training']['params'] = {**config['training']['params'], **params}   
-        config['best_config_run'] = True 
 
-    
+        config['training']['params']['epochs'] = BEST_CONFIG_EPOCHS
+        config['training']['params'] = {**config['training']['params'], **params}
+        config['best_config_run'] = True
+
         metrics = train_main(config)
+        
         print("FINETUNING WITH HYPERPARAMETER TUNING TRAINING COMPLETED")
-
         return metrics
     except Exception as e:
-        print(f'Error with file name experiments/baseline_ft.yaml: {e}')
-        return None    
-    
-    
-
+        print(f'Error with file name experiments/baseline_ft_ht.yaml: {e}')
+        return None
 
 
 if __name__ == '__main__':

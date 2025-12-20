@@ -255,7 +255,7 @@ def main(config=None):
     model_save_path = os.path.join(output_dir, 'classifier.pth')
 
     #---------- PLOTS ----------
-    if (config['ht'] and config['best_config_run']) or (not config['ht']): #plots only if its not hyperparameter tuning or if it's the final run of best configuration of hyperparameter tuning
+    if (config['training']['ht'] and config['best_config_run']) or (not config['training']['ht']): #plots only if its not hyperparameter tuning or if it's the final run of best configuration of hyperparameter tuning
         plot_dir = os.path.join(output_dir, 'plots')
         os.makedirs(plot_dir, exist_ok=True)
         
@@ -272,7 +272,7 @@ def main(config=None):
     test_loss, test_accuracy, test_f1, test_recall, test_precision, test_roc_auc, test_cm = test_model(model, config, device, optimal_threshold)
 
     #PLOT CONFUSION MATRIX
-    if (config['ht'] and config['best_config_run']) or (not config['ht']): #plots only if its not hyperparameter tuning or if it's the final run of best configuration of hyperparameter tuning
+    if (config['training']['ht'] and config['best_config_run']) or (not config['training']['ht']): #plots only if its not hyperparameter tuning or if it's the final run of best configuration of hyperparameter tuning
         plot_cm(plot_dir, test_cm)
         print(f'Final Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy:.4f}, Recall: {test_recall:.4f}, Precision: {test_precision:.4f}, F1: {test_f1:.4f}, ROC-AUC: {test_roc_auc:.4f}')
         print(f'Optimal Threshold: {optimal_threshold:.3f}')
