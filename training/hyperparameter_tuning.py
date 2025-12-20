@@ -17,6 +17,8 @@ PARAM_DISTRIBUTION = {
 
 N_ITERATIONS = 5 #simulate 5 iterations of RandomSearch
 
+BEST_CONFIG_EPOCHS = 10
+
 def tune_with_hyperparams(hyperparams):
         
     print(f"TESTING PARAMS: {hyperparams}")
@@ -112,6 +114,7 @@ def run_best_config():
         with open('experiments/baseline_ft_ht.yaml', 'r') as f:
             config = yaml.safe_load(f)
         
+        config['training']['params']['epochs'] = BEST_CONFIG_EPOCHS 
         config['training']['params'] = {**config['training']['params'], **params}   
         config['best_config_run'] = True 
 
