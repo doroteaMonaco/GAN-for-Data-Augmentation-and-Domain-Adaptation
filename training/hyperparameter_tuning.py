@@ -6,10 +6,10 @@ import yaml
 import pandas as pd
 from train_classifier import main as train_main
 import random
-
+import os
 PARAM_DISTRIBUTION = {
     'weight_decay': [0, 1e-3, 1e-4, 1e-5],
-    'batch_size': [16, 32, 64, 128],
+    'batch_size': [32, 64, 128],
     'lr': [1e-1, 1e-2, 1e-3, 1e-4],
     'momentum': [0.8, 0.9, 0.95],
     'optimizer': ['SGD', 'Adam', 'RMSprop', 'AdamW'] ,
@@ -20,13 +20,15 @@ N_ITERATIONS = 5 #simulate 5 iterations of RandomSearch
 def tune_with_hyperparams(hyperparams):
         
     print(f"TESTING PARAMS: {hyperparams}")
-    
-    with open('experiments/baseline_ft_ht.yaml', 'r') as f:
-        config = yaml.safe_load(f)
-    
-    config['training']['params'] = {**config['training']['params'], **hyperparams}    
 
     try:
+    
+        with open('experiments/baseline_ft_ht.yaml', 'r') as f:
+            config = yaml.safe_load(f)
+        
+        config['training']['params'] = {**config['training']['params'], **hyperparams}    
+
+    
         metrics = train_main(config)
         
         res = hyperparams
@@ -37,7 +39,7 @@ def tune_with_hyperparams(hyperparams):
         res['roc_auc']= metrics['roc_auc']
         res['val_loss']= metrics['val_loss']
 
-        return res
+        return res, config
         
     except Exception as e:
         print(f"Error with hyperparameter {hyperparams}: {e}")
@@ -60,9 +62,9 @@ def run_hyperparameter_tuning():
         'optimizer': random.choice(PARAM_DISTRIBUTION['optimizer']) 
         }
 
-        print(f"PROCESSING ITERATION {iter}")
+        print(f"PROCESSING ITERATION {iter+1}")
     
-        result = tune_with_hyperparams(params)
+        result, config = tune_with_hyperparams(params)
         
         if result is not None:
             results.append(result)
@@ -73,9 +75,10 @@ def run_hyperparameter_tuning():
     
     # Save all results
     results_df = pd.DataFrame(results)
-    results_dir = Path("results/hyperparameter_tuning")
-    results_dir.mkdir(parents=True, exist_ok=True)
-    csv_path = results_dir / "tuning_results.csv"
+    results_dir = config['output_dir']
+    os.makedirs(results_dir, exist_ok=True)
+
+    csv_path = os.path.join(results_dir, "tuning_results.csv")
     results_df.to_csv(csv_path, index=False)
     
     # Identify best configuration (highest Recall for medical imaging)
@@ -87,8 +90,45 @@ def run_hyperparameter_tuning():
     
  
     
-    return best_config, results_df
+    return best_config, results_df, config
 
-if __name__ == '__main__':
+def run_best_config():
     best_config, results = run_hyperparameter_tuning()
     print(f'BEST CONFIG: {best_config}\nRESULTS: {results}')
+
+    #run complete training with best config
+    params = {
+            'learning_rate': best_config['learning_rate'],
+            'batch_size': best_config['batch_size'],
+            'weight_decay': best_config['weight_decay'],
+            'momentum': best_config['momentum'],
+            'optimizer': best_config['optimizer'],
+        }
+    
+    print("FINETUNING WITH HYPERPARAMETER TUNING TRAINING - BEST CONFIGURATION TRAINING")
+    
+    try:
+    
+        with open('experiments/baseline_ft_ht.yaml', 'r') as f:
+            config = yaml.safe_load(f)
+        
+        config['training']['params'] = {**config['training']['params'], **params}   
+        config['best_config_run'] = True 
+
+    
+        metrics = train_main(config)
+        print("FINETUNING WITH HYPERPARAMETER TUNING TRAINING COMPLETED")
+
+        return metrics
+    except Exception as e:
+        print(f'Error with file name experiments/baseline_ft.yaml: {e}')
+        return None    
+    
+    
+
+
+
+if __name__ == '__main__':
+    results = run_best_config()
+    print(results)
+    

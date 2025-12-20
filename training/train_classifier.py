@@ -255,26 +255,28 @@ def main(config=None):
     model_save_path = os.path.join(output_dir, 'classifier.pth')
 
     #---------- PLOTS ----------
-    plot_dir = os.path.join(output_dir, 'plots')
-    os.makedirs(plot_dir, exist_ok=True)
-    
-    
-    plot_train_val_stats(plot_dir, train_losses_epochs, validation_losses_epochs, train_accuracy_epochs, validation_accuracy_epochs)
+    if (config['ht'] and config['best_config_run']) or (not config['ht']): #plots only if its not hyperparameter tuning or if it's the final run of best configuration of hyperparameter tuning
+        plot_dir = os.path.join(output_dir, 'plots')
+        os.makedirs(plot_dir, exist_ok=True)
+        
+        
+        plot_train_val_stats(plot_dir, train_losses_epochs, validation_losses_epochs, train_accuracy_epochs, validation_accuracy_epochs)
 
-    #PLOTTING ROC-CURVE and RECALL-PRECISION on VALIDATION SET to compute OPTIMAL THRESHOLD (max F1)
-    val_loss_final, val_accuracy, val_f1, val_recall, val_precision, val_roc_auc, val_cm, optimal_threshold = evaluate_with_threshold_tuning(model, val_loader, criterion, device, plot_dir)
-    print(f'\nValidation with Optimal Threshold: Loss: {val_loss_final:.4f}, Accuracy: {val_accuracy:.4f}, Recall: {val_recall:.4f}, Precision: {val_precision:.4f}, F1: {val_f1:.4f}, ROC-AUC: {val_roc_auc:.4f}')
-    print(f'Validation Confusion Matrix:\n{val_cm}\n')
+        #PLOTTING ROC-CURVE and RECALL-PRECISION on VALIDATION SET to compute OPTIMAL THRESHOLD (max F1)
+        val_loss_final, val_accuracy, val_f1, val_recall, val_precision, val_roc_auc, val_cm, optimal_threshold = evaluate_with_threshold_tuning(model, val_loader, criterion, device, plot_dir)
+        print(f'\nValidation with Optimal Threshold: Loss: {val_loss_final:.4f}, Accuracy: {val_accuracy:.4f}, Recall: {val_recall:.4f}, Precision: {val_precision:.4f}, F1: {val_f1:.4f}, ROC-AUC: {val_roc_auc:.4f}')
+        print(f'Validation Confusion Matrix:\n{val_cm}\n')
 
     #---------- TESTING USING OPTIMAL THRESHOLD ----------
     model.load_state_dict(torch.load(model_save_path))
     test_loss, test_accuracy, test_f1, test_recall, test_precision, test_roc_auc, test_cm = test_model(model, config, device, optimal_threshold)
 
     #PLOT CONFUSION MATRIX
-    plot_cm(plot_dir, test_cm)
-    print(f'Final Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy:.4f}, Recall: {test_recall:.4f}, Precision: {test_precision:.4f}, F1: {test_f1:.4f}, ROC-AUC: {test_roc_auc:.4f}')
-    print(f'Optimal Threshold: {optimal_threshold:.3f}')
-    print(f'Confusion Matrix:\n{test_cm}')
+    if (config['ht'] and config['best_config_run']) or (not config['ht']): #plots only if its not hyperparameter tuning or if it's the final run of best configuration of hyperparameter tuning
+        plot_cm(plot_dir, test_cm)
+        print(f'Final Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy:.4f}, Recall: {test_recall:.4f}, Precision: {test_precision:.4f}, F1: {test_f1:.4f}, ROC-AUC: {test_roc_auc:.4f}')
+        print(f'Optimal Threshold: {optimal_threshold:.3f}')
+        print(f'Confusion Matrix:\n{test_cm}')
     
     return {
         'accuracy': test_accuracy,

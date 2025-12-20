@@ -11,6 +11,6 @@ training: #hyperparameter-tuning with random search
   ht: true
   layers: 2
   params:
-    epochs: 6
+    epochs: 5
 
 output_dir: results/baseline/ft_ht
