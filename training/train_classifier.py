@@ -244,7 +244,7 @@ def main(config=None):
             early_stopping_count+=1
             
         if early_stopping_count>=patience:
-            print(f'Early stopping at epoch {epoch}')
+            print(f'Early stopping at epoch {epoch+1}')
             break
     
     
@@ -254,6 +254,7 @@ def main(config=None):
     output_dir = config.get('output_dir', 'results/baseline')
     model_save_path = os.path.join(output_dir, 'classifier.pth')
 
+    optimal_threshold = False #initialize for non-best_config runs in hyperparameter tuning 
     #---------- PLOTS ----------
     if (config['training']['ht'] and config['best_config_run']) or (not config['training']['ht']): #plots only if its not hyperparameter tuning or if it's the final run of best configuration of hyperparameter tuning
         plot_dir = os.path.join(output_dir, 'plots')

@@ -33,7 +33,7 @@ def tune_with_hyperparams(hyperparams):
     
         metrics = train_main(config)
         
-        res = hyperparams
+        res = hyperparams.copy()
         res['accuracy']= metrics['accuracy']
         res['recall']= metrics['recall']
         res['precision']= metrics['precision']
@@ -52,7 +52,7 @@ def tune_with_hyperparams(hyperparams):
         return res, config
         
     except Exception as e:
-        print(f"Error with hyperparameter {hyperparams}: {e}")
+        print(f"Error with hyperparameter {hyperparams}: {repr(e)}")
         return None
 
 def run_hyperparameter_tuning():
@@ -118,10 +118,10 @@ def run_best_config():
 
     # run complete training with best config
     params = {
-        'lr': best_config['lr'],
-        'batch_size': best_config['batch_size'],
-        'weight_decay': best_config['weight_decay'],
-        'momentum': best_config['momentum'],
+        'lr': float(best_config['lr']),
+        'batch_size': int(best_config['batch_size']),
+        'weight_decay': float(best_config['weight_decay']),
+        'momentum': float(best_config['momentum']),
         'optimizer': best_config['optimizer'],
     }
 

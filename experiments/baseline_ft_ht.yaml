@@ -13,4 +13,6 @@ training: #hyperparameter-tuning with random search
   params:
     epochs: 5 #epochs for hyperparameter tuning, not for final training
 
+best_config_run: false
+
 output_dir: results/baseline/ft_ht
