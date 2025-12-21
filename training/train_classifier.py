@@ -210,7 +210,8 @@ def main(config=None):
             all_labels.extend(labels.cpu().detach().numpy())
             all_probs.extend(probs.cpu().detach().numpy())
         
-        train_losses_epochs.append(running_loss/num_samples)
+        train_loss = running_loss/num_samples
+        train_losses_epochs.append(train_loss)
         train_accuracy_epochs.append(1.0*train_corrects/float(num_samples))
 
         train_accuracy = accuracy_score(all_labels, all_preds)
@@ -229,8 +230,8 @@ def main(config=None):
         validation_accuracy_epochs.append(val_acc)
         validation_losses_epochs.append(val_loss)
 
-        print(f'Epoch {epoch+1}/{config['training']['params']["epochs"]}, Train Loss: {running_loss/num_samples:.4f}, Accuracy: {train_accuracy:.4f}, Recall: {train_recall:.4f}, Precision: {train_precision:.4f}, F1: {train_f1:.4f}, ROC-AUC: {train_roc_auc:.4f}')
-        print(f'Epoch {epoch+1}/{config['training']['params']["epochs"]}, Val Loss: {val_loss}, Accuracy: {accuracy:.4f}, Recall: {recall:.4f}, Precision: {precision:.4f}, F1: {f1:.4f}, ROC-AUC: {roc_auc:.4f}')
+        print(f'Epoch {epoch+1}/{config['training']['params']["epochs"]}, Train Loss: {train_loss:.4f}, Accuracy: {train_accuracy:.4f}, Recall: {train_recall:.4f}, Precision: {train_precision:.4f}, F1: {train_f1:.4f}, ROC-AUC: {train_roc_auc:.4f}')
+        print(f'Epoch {epoch+1}/{config['training']['params']["epochs"]}, Val Loss: {val_loss:.4f}, Accuracy: {accuracy:.4f}, Recall: {recall:.4f}, Precision: {precision:.4f}, F1: {f1:.4f}, ROC-AUC: {roc_auc:.4f}')
         
         if recall > best_recall:
             early_stopping_count = 0
@@ -255,6 +256,7 @@ def main(config=None):
     model_save_path = os.path.join(output_dir, 'classifier.pth')
 
     optimal_threshold = False #initialize for non-best_config runs in hyperparameter tuning 
+    
     #---------- PLOTS ----------
     if (config['training']['ht'] and config['best_config_run']) or (not config['training']['ht']): #plots only if its not hyperparameter tuning or if it's the final run of best configuration of hyperparameter tuning
         plot_dir = os.path.join(output_dir, 'plots')

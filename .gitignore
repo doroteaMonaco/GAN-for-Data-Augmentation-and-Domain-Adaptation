@@ -6,3 +6,4 @@ data/processed/baseline/train/malignant/**.jpg
 data/processed/baseline/val/**.jpg
 __pycache__/
 *.pyc
+*.pth
