@@ -33,7 +33,7 @@ def plot_precision_recall_ROC(precision, recall, optimal_idx, optimal_threshold,
     avg_precision = auc(recall, precision)
     ax1.plot(recall, precision, color='blue', lw=2, label=f'PR curve (AP={avg_precision:.3f})')
     ax1.scatter(recall[optimal_idx], precision[optimal_idx], color='red', s=100, 
-                label=f'Optimal (max recall)={optimal_threshold:.3f}', zorder=5)
+                label=f'Optimal (max F1)={optimal_threshold:.3f}', zorder=5)
     ax1.set_xlabel('Recall', fontsize=12)
     ax1.set_ylabel('Precision', fontsize=12)
     ax1.set_title('Precision-Recall Curve', fontsize=14)
@@ -48,7 +48,7 @@ def plot_precision_recall_ROC(precision, recall, optimal_idx, optimal_threshold,
     # Find threshold point on ROC curve closest to optimal
     optimal_idx_roc = np.argmin(np.abs(thresholds_roc - optimal_threshold))
     ax2.scatter(fpr[optimal_idx_roc], tpr[optimal_idx_roc], color='red', s=100,
-                label=f'Optimal (max recall)={optimal_threshold:.3f}', zorder=5)
+                label=f'Optimal (max F1)={optimal_threshold:.3f}', zorder=5)
     
     ax2.set_xlabel('False Positive Rate', fontsize=12)
     ax2.set_ylabel('True Positive Rate', fontsize=12)

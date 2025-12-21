@@ -86,17 +86,9 @@ def generate_final_report(baseline_metrics, finetune_results, tuning_results, be
         ax1.legend(loc='lower right')
         ax1.set_xticklabels(df_plot.index, rotation=0)
 
-        # Validation loss comparison
-        ax2 = fig.add_subplot(gs[1, 1])
-        sns.barplot(x=df.index, y=df['val_loss'], ax=ax2, palette='viridis')
-        ax2.set_title('Validation Loss Comparison')
-        ax2.set_ylabel('Val Loss')
-        for i, v in enumerate(df['val_loss']):
-            ax2.text(i, v + 0.01, f'{v:.4f}', ha='center', va='bottom', fontsize=10)
-
         # Table for best hyperparameters or message if not performed
-        ax3 = fig.add_subplot(gs[2, 0])
-        ax3.axis('off')
+        ax2 = fig.add_subplot(gs[2, 0])
+        ax2.axis('off')
         if best_config is not False:
             hp_table = [
                 ['Learning Rate', best_config['learning_rate']],
@@ -104,17 +96,17 @@ def generate_final_report(baseline_metrics, finetune_results, tuning_results, be
                 ['Weight Decay', best_config['weight_decay']],
                 ['Optimizer', best_config['optimizer']]
             ]
-            table = ax3.table(cellText=hp_table, colLabels=['Hyperparameter', 'Value'], loc='center', cellLoc='center')
+            table = ax2.table(cellText=hp_table, colLabels=['Hyperparameter', 'Value'], loc='center', cellLoc='center')
             table.auto_set_font_size(False)
             table.set_fontsize(12)
             table.scale(1.2, 1.2)
         else:
-            ax3.text(0.5, 0.5, 'No Hyperparameter Tuning performed', fontsize=14, ha='center', va='center')
-            ax3.set_title('Best Hyperparameter Configuration', fontsize=14, pad=10)
+            ax2.text(0.5, 0.5, 'No Hyperparameter Tuning performed', fontsize=14, ha='center', va='center')
+            ax2.set_title('Best Hyperparameter Configuration', fontsize=14, pad=10)
         
         # Improvement summary
-        ax4 = fig.add_subplot(gs[2, 1])
-        ax4.axis('off')
+        ax3 = fig.add_subplot(gs[2, 1])
+        ax3.axis('off')
         improvement_finetune_f1 = (finetune_results['f1'] - baseline_metrics['f1']) / baseline_metrics['f1'] * 100
         improvement_final_f1 = (tuning_results['f1'] - baseline_metrics['f1']) / baseline_metrics['f1'] * 100 if tuning_results else None
 
@@ -130,11 +122,11 @@ def generate_final_report(baseline_metrics, finetune_results, tuning_results, be
             summary_text_f1 += f"- Hyperparam Tuned: {tuning_results['f1']:.4f} ({improvement_final_f1:+.2f}%)\n\n"
         else:
             summary_text_f1 += "- Hyperparam Tuned: No Hyperparameter Tuning performed\n\n"
-        ax4.text(0, 1, summary_text_f1, fontsize=12, va='top', ha='left', wrap=True)
+        ax3.text(0, 1, summary_text_f1, fontsize=12, va='top', ha='left', wrap=True)
 
-        # Add recall improvement summary in ax5, same style as ax4
-        ax5 = fig.add_subplot(gs[3, :]) if hasattr(gs, '__getitem__') and gs.get_geometry()[0] > 3 else fig.add_subplot(111)
-        ax5.axis('off')
+        # Add recall improvement summary in ax4, same style as ax3
+        ax4 = fig.add_subplot(gs[3, :]) if hasattr(gs, '__getitem__') and gs.get_geometry()[0] > 3 else fig.add_subplot(111)
+        ax4.axis('off')
         summary_text_recall = (
             f"Recall Improvement:\n"
             f"- Baseline: {baseline_metrics['recall']:.4f}\n"
@@ -144,7 +136,7 @@ def generate_final_report(baseline_metrics, finetune_results, tuning_results, be
             summary_text_recall += f"- Hyperparam Tuned: {tuning_results['recall']:.4f} ({improvement_final_recall:+.2f}%)\n\n"
         else:
             summary_text_recall += "- Hyperparam Tuned: No Hyperparameter Tuning performed\n\n"
-        ax5.text(0, 1, summary_text_recall, fontsize=12, va='top', ha='left', wrap=True)
+        ax4.text(0, 1, summary_text_recall, fontsize=12, va='top', ha='left', wrap=True)
 
         # Save image
         image_path = os.path.join(report_dir, "optimization_report.png")
@@ -179,7 +171,7 @@ def generate_final_report(baseline_metrics, finetune_results, tuning_results, be
         f.write(f"  - ROC-AUC: {finetune_results['roc_auc']:.4f}\n")
         f.write(f"  - Val Loss: {finetune_results['val_loss']:.4f}\n\n")
 
-        if best_config:
+        if best_config is not False:
             f.write("STEP 2: HYPERPARAMETER TUNING\n")
             f.write(f"Best hyperparameter configuration:\n{best_config}\n")
             f.write(FINAL_METRICS)
@@ -197,14 +189,14 @@ def generate_final_report(baseline_metrics, finetune_results, tuning_results, be
         improvement_finetune_recall = (finetune_results['recall'] - baseline_metrics['recall']) / baseline_metrics['recall'] * 100
         f.write(f"Baseline F1: {baseline_metrics['f1']:.4f}\n")
         f.write(f"Fine Tune F1: {finetune_results['f1']:.4f} ({improvement_finetune_f1:+.2f}%)\n")
-        if best_config:
+        if best_config is not False:
             f.write(f"  After Hyperparameter Tuning F1: {tuning_results['f1']:.4f} ({improvement_final_f1:+.2f}%)\n")
         f.write(f"Baseline Recall: {baseline_metrics['recall']:.4f}\n")
         f.write(f"Fine Tune Recall: {finetune_results['recall']:.4f} ({improvement_finetune_recall:+.2f}%)\n")
-        if best_config:
+        if best_config is not False:
             f.write(f"  After Hyperparameter Tuning Recall: {tuning_results['recall']:.4f} ({improvement_final_recall:+.2f}%)\n")
 
-        if best_config:
+        if best_config is not False:
             f.write("Best hyperparameter configuration:\n")
             f.write(f"  - Learning Rate: {best_config['learning_rate']}\n")
             f.write(f"  - Batch Size: {best_config['batch_size']}\n")
@@ -221,7 +213,7 @@ def generate_final_report(baseline_metrics, finetune_results, tuning_results, be
 
     print(f"✓ Report saved: {report_path}")
 
-    if best_config:
+    if best_config is not False:
         # Save summary as JSON
         summary_path = os.path.join(report_dir, "best_config.json")
         summary = {
@@ -272,6 +264,8 @@ if __name__ == '__main__':
 
     #take as argument 'no_ht' or nothing
     mode = validate_input()
+
+    print(f'RUNNING PIPELINE WITH MODE: {mode}\n')
     
     run_full_pipeline(mode)
     
