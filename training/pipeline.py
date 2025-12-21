@@ -108,9 +108,8 @@ def generate_final_report(baseline_metrics, finetune_results, tuning_results, be
             table.auto_set_font_size(False)
             table.set_fontsize(12)
             table.scale(1.2, 1.2)
-            ax3.set_title('Best Hyperparameter Configuration', fontsize=14, pad=10)
         else:
-            ax3.text(0.5, 0.5, 'No hyperparameter tuning performed', fontsize=14, ha='center', va='center')
+            ax3.text(0.5, 0.5, 'No Hyperparameter Tuning performed', fontsize=14, ha='center', va='center')
             ax3.set_title('Best Hyperparameter Configuration', fontsize=14, pad=10)
         
         # Improvement summary
@@ -126,8 +125,11 @@ def generate_final_report(baseline_metrics, finetune_results, tuning_results, be
             f"F1 Score Improvement:\n"
             f"- Baseline: {baseline_metrics['f1']:.4f}\n"
             f"- Fine-tuned: {finetune_results['f1']:.4f} ({improvement_finetune_f1:+.2f}%)\n"
-            f"- Hyperparam Tuned: {tuning_results['f1']:.4f} ({improvement_final_f1:+.2f}%)\n\n" if tuning_results else 'No Hyperparameter Tuning performed'
         )
+        if tuning_results:
+            summary_text_f1 += f"- Hyperparam Tuned: {tuning_results['f1']:.4f} ({improvement_final_f1:+.2f}%)\n\n"
+        else:
+            summary_text_f1 += "- Hyperparam Tuned: No Hyperparameter Tuning performed\n\n"
         ax4.text(0, 1, summary_text_f1, fontsize=12, va='top', ha='left', wrap=True)
 
         # Add recall improvement summary in ax5, same style as ax4
@@ -137,8 +139,11 @@ def generate_final_report(baseline_metrics, finetune_results, tuning_results, be
             f"Recall Improvement:\n"
             f"- Baseline: {baseline_metrics['recall']:.4f}\n"
             f"- Fine-tuned: {finetune_results['recall']:.4f} ({improvement_finetune_recall:+.2f}%)\n"
-            f"- Hyperparam Tuned: {tuning_results['recall']:.4f} ({improvement_final_recall:+.2f}%)\n\n" if tuning_results else 'No Hyperparameter Tuning performed'
         )
+        if tuning_results:
+            summary_text_recall += f"- Hyperparam Tuned: {tuning_results['recall']:.4f} ({improvement_final_recall:+.2f}%)\n\n"
+        else:
+            summary_text_recall += "- Hyperparam Tuned: No Hyperparameter Tuning performed\n\n"
         ax5.text(0, 1, summary_text_recall, fontsize=12, va='top', ha='left', wrap=True)
 
         # Save image
